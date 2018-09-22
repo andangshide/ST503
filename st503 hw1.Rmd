@@ -1,0 +1,96 @@
+---
+title: "ST503 HW1 SHAN YANG"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+##2.4##
+```{r}
+library(faraway)
+data<-prostate
+head(prostate)
+```
+get the regression of each variables added in 
+```{r}
+olca<-lm(lpsa~lcavol,data=prostate)
+olwei<-lm(lpsa~lcavol+lweight,data=prostate)
+osvi<-lm(lpsa~lcavol+lweight+svi,data=prostate)
+olbph<-lm(lpsa~lcavol+lweight+svi+lbph,data=prostate)
+oage<-lm(lpsa~lcavol+lweight+svi+lbph+age,data=prostate)
+olcp<-lm(lpsa~lcavol+lweight+svi+lbph+age+lcp,data=prostate)
+opgg<-lm(lpsa~lcavol+lweight+svi+lbph+age+lcp+pgg45,data=prostate)
+oglea<-lm(lpsa~lcavol+lweight+svi+lbph+age+lcp+pgg45+gleason,data=prostate)
+```
+get their standard errors for residuals
+```{r}
+sd<-c(summary(olca)$sigma,summary(olwei)$sigma,summary(osvi)$sigma,summary(olbph)$sigma,summary(oage)$sigma,summary(olcp)$sigma,summary(opgg)$sigma,summary(oglea)$sigma)
+##Can not use sd(lm$residuals), the df is wrong
+##Same as sqrt(deviance(oglea)/df.residual(oglea))
+
+#get the r-squares for regression
+rsquared<-c(summary(olca)$r.squared,summary(olwei)$r.squared,summary(osvi)$r.squared,summary(olbph)$r.squared,summary(oage)$r.squared,summary(olcp)$r.squared,summary(opgg)$r.squared,summary(oglea)$r.squared)
+```
+plot the trend
+
+```{r}
+par(mfrow=c(1, 2))
+plot(sd,main="Trend for standard error when adding in variables",xlab="number of variables",ylab="sd for e",type="l")
+plot(rsquared,main="Trend for R-sq when adding in variables",xlab="number of variables",ylab="R-sq",type="l")
+```
+##2.6
+```{r}
+cheddar<-cheddar
+head(cheddar)
+```
+(a)Regression and get the coefficients
+```{r}
+ocheddar<-lm(taste~Acetic+H2S+Lactic,data=cheddar)
+ocheddar
+```
+(b)get the corr and square it
+```{r}
+fittedy<-ocheddar$fitted.values
+corsq<-cor(x=cheddar$taste,y=fittedy)^2
+corsq
+```
+```{r}
+summary(ocheddar)
+```
+So the corr-sq is the Multiple R-squared in the regression.
+
+Problem 4(b). Regression through the origin, Hubble data
+
+x is the distance from earth, y is the v of a galaxy
+```{r}
+x <- c(0.032, 0.034, 0.214, 0.263, 0.275, 0.275, 0.450, 0.500, 0.500, 0.630, 0.800, 0.900, 
+       0.900, 0.900, 0.900, 1.000, 1.100, 1.100, 1.400, 1.700, 2.000, 2.000, 2.000, 2.000)
+y <- c(170, 290, -130,-70, -185, -220, 200, 290, 270, 200, 300, -30,  
+       650, 150, 500, 920, 450, 500, 500, 960, 500, 850, 800, 1090)
+```
+
+```{r}
+ohubble<-lm(y~0+x) #do the regression and force it go through the origin
+plot(x,y,xlab = "Distance from earth",ylab = "v of galaxy",main = "Regression thourgh origin") #get the scatter plot
+abline(ohubble) #add regression line to it
+```
+```{r}
+fittedv<-ohubble$fitted.values
+cor(y,fittedv)^2
+```
+We can read the correlation is .6235, which means a relatively strong positive relationship between distance and velocity
+
+5.
+```{r}
+n <- 15
+op <- par(pty="m", mfrow=c(3, 3), mar=c(4.2, 4.2, 1, 1))
+for(i in 1:9) {
+  
+  X <- rnorm(n)
+  hist(X, freq=FALSE, col="gray", border="white", main="")
+  curve(dnorm(x, mean(X), sd(X)), add=TRUE)
+  
+}
+par(op)
+```
+4 of them are kind or "normal". The first one is right-skewed, the second is approximately normal but with really heavy tail, third has two "tops", forth is almost normal, fifth also has two tops, sixth right-skewed, seventh seems normal, eighth almost normal, ninth almost normal.

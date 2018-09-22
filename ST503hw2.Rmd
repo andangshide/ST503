@@ -1,0 +1,113 @@
+---
+title: "ST503 HW2 SHAN YANG"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+##3.1
+```{r}
+library(faraway)
+prostate<-prostate
+head(prostate)
+```
+
+fit the model
+```{r}
+oprostate<-lm(lpsa~lcavol+lweight+age+lbph+svi+lcp+gleason+pgg45,data = prostate)
+sumary(oprostate)
+```
+
+(a)CI for age
+```{r}
+cat("the 90% CI for age is:",(-0.0196372+c(-1,1)*qt(.95,97-9)*0.0111727),"and 95% CI for age is:",(-0.0196372+c(-1,1)*qt(.975,97-9)*0.0111727))
+
+```
+We can reject $H_0:\beta_{age}=0$ at $\alpha=.1$(90% confidence level) since the interval does not includes 0, however, we cannot do it when $\alpha=.05$ (95% level).And we can see, the true p-value is 0.082293, which confirms our guess.
+
+(b)
+
+```{r}
+#draw the confidence region
+library(ellipse)
+plot(ellipse(oprostate,c(4,5)),type = "l")
+points(0,0)
+abline(v=confint(oprostate)[4,],lty=2)
+abline(h=confint(oprostate)[5,],lty=2)
+```
+The origin of the plot tests $H_0:\beta_{age}=0$ and $\beta_{lbph}=0$. And the test result is we cannot reject the null because the point in in the region.
+
+(c)
+```{r}
+tstats<-4000
+set.seed(100)
+for (i in 1:tstats){
+  o<-lm(lpsa~lcavol+lweight+sample(age)+lbph+svi+lcp+gleason+pgg45,data = prostate) #generate permutation for age column
+  tstats[i]<-summary(o)$coef[4,3] #get the t value for each permutation
+}
+mean(abs(tstats)>abs(summary(oprostate)$coef[4,3])) #check the percentage of two tails t-stats larger than not permutated
+```
+Comparing with the p-value 0.082293 we got before, it is not so different. 
+
+##7
+```{r}
+punting<-punting
+head(punting)
+```
+(a)
+```{r}
+opunting<-lm(Distance~RStr+LStr+RFlex+LFlex,data = punting)
+summary(opunting)
+```
+we can read from the Pr column, at .05 level, none of the predictors is significant.
+
+(b)
+the p-value for F-stat is .019, means we can reject the $H_0:\beta_{RStr}=\beta_{LStr}=\beta_{RFlex}=\beta_{LFlex}=0$. Which means they are collectively has influence on the response
+
+(c)
+```{r}
+opuntingsub<-lm(Distance~I(RStr+LStr)+RFlex+LFlex,data = punting)
+anova(opuntingsub,opunting)
+```
+the p-value for F-stat is 0.468, means we cannot reject the $H_0:\beta_{RStr}=\beta_{LStr}$
+
+(d)
+
+We can see the region is kind of downward, when right leg strength impact is high, the left leg strength impact will tend to be low. Which means this two variables are correlated. So actually, the sum of them influences the response.
+
+```{r}
+#draw the confidence region
+library(ellipse)
+plot(ellipse(opuntingsub,c(2,2)),type = "l")
+abline(v=confint(opuntingsub)[2,],lty=2)
+abline(h=confint(opuntingsub)[2,],lty=2)
+```
+We can see from the plot that the ellipse is collapsed into a line，and their confidence region is a line now, which satisfies the (C), we cannot reject the H0:two betas are equal----corr=1.
+##4
+```{r}
+teengamb<-teengamb
+head(teengamb)
+```
+(a)
+Because the model $y=\beta_0+\beta_1sex+\beta_2status+\beta_3income+\beta4verbal+e$ will become $y=\beta_0+e$ under null. With e~N(0,$\sigma^2$) and $\beta_0$ as fixed value. y will be N($\beta_0$,$\sigma^2$).
+
+(b)
+```{r}
+fstats<-5000
+set.seed(100)
+for (i in 1:fstats){
+  y<-rnorm(47)
+  o<-lm(y~sex+status+income+verbal,data = teengamb) #generate permutation for age column
+  fstats[i]<-summary(o)$fstat[1] #get the t value for each permutation
+}
+
+```
+```{r}
+hist(fstats,ylim=c(0,.8),freq = FALSE)
+xfit<-seq(min(fstats), max(fstats), length = 5000)
+yfit<-df(xfit, df1=4,df2=42) 
+lines(xfit, yfit,col = "black", lwd = 2)
+```
+
+Yes, it follows $F_{p-1,n-p}$
+
